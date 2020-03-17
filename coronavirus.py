@@ -57,7 +57,7 @@ def espana_layout():
 	new = df_total['Date'].str.split(' ', n = 1, expand = True)
 	df_total['Day'] = new[0]
 	df_total['Hour'] = new[1]
-	df_total = df_total.groupby('Day').max()
+	df_total = df_total.groupby('Day', as_index=False).max()
 
 	df_total['nuevos_infectados'] = df_total['Casos'].diff()
 	df_total['tasa_contagio'] = df_total['nuevos_infectados'] / (df_total['Casos'] - df_total['nuevos_infectados'])
@@ -92,7 +92,7 @@ def espana_layout():
 			            'data' : [
 			                go.Scatter(
 
-			                x = df_total['Date'],
+			                x = df_total['Day'],
 			                y = df_total[column],
 			                mode = "markers+lines",
 			                name = column
@@ -120,7 +120,7 @@ def espana_layout():
 			            'data' : [
 			                go.Bar(
 
-			                x = df_total['Date'],
+			                x = df_total['Day'],
 			                y = df_total['tasa_contagio'],
 			                name = "Tasa de contagios"
 			                )

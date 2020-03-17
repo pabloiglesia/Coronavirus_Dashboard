@@ -82,7 +82,8 @@ target_data = target_tables[0].findAll("li")
 
 altas = extract_numbers_from_text(target_data.pop().get_text().replace('.', ''))[0]
 total = extract_numbers_from_text(target_total.get_text().replace('.', ''))[0]
-print(total)
+total_muertes = extract_numbers_from_text(target_total.get_text().replace('.', ''))[1]
+
 
 datos_espana = []
 fecha = datetime.now() + timedelta(hours=1)
@@ -97,12 +98,7 @@ for line in target_data:
         comunidad.append(dato)
     datos_espana.append(comunidad)
 
-total_muertes = 0
-for dato in datos_espana:
-    try:
-        total_muertes += dato[4]
-    except:
-        pass
+
 
 pd.DataFrame([[timestamp,fecha,total,total_muertes,altas]]).to_csv("coronavirus-total.csv", mode='a', header=False, index=False)
 pd.DataFrame(datos_espana).to_csv("coronavirus.csv", mode='a', header=False, index=False)
