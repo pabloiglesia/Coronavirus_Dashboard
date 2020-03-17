@@ -1,20 +1,20 @@
-﻿Comunidad,Poblacion
-Madrid ,6640705
-País Vasco,2178048
-Cataluña,7565099
-La Rioja,313582
-Andalucía,8426405
-Castilla-La Mancha,2035505
-Castilla y León,2408083
-Navarra,649966
-Asturias,1022293
-la Comunidad Valenciana ,4974475
-Galicia,2700330
-Aragón ,1320794
-Canarias ,2207225
-Extremadura,1065371
-Murcia,1487698
-Baleares,1187808
-Cantabria,581684
-Melilla,84714
-Ceuta,85209
+﻿Comunidad,Poblacion,Latitud,Longitud
+Madrid ,6640705,40.433333,-3.683333
+País Vasco,2178048,42.85,-2.683333
+Cataluña,7565099,41.383333,2.166667
+La Rioja,313582,42.464653,-2.4458
+Andalucía,8426405,37.366667,-5.983333
+Castilla-La Mancha,2035505,39.856528,-4.025111
+Castilla y León,2408083,41.633333,-4.716667
+Navarra,649966,42.818333,-1.644167
+Asturias,1022293,43.36,-5.845
+la Comunidad Valenciana ,4974475,39.47,-0.376667
+Galicia,2700330,42.866667,-8.55
+Aragón ,1320794,41.65635,-0.876566
+Canarias ,2207225,28.15,-15.416667
+Extremadura,1065371,38.9,-6.333333
+Murcia,1487698,37.986111,-1.130278
+Baleares,1187808,39.566667,2.65
+Cantabria,581684,43.45,-3.8
+Melilla,84714,35.291667,-2.938333
+Ceuta,85209,35.888056,-5.316111

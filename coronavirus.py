@@ -118,11 +118,10 @@ def espana_layout():
 			        id = 'tasa_contagio',
 			        figure = {
 			            'data' : [
-			                go.Scatter(
+			                go.Bar(
 
 			                x = df_total['Date'],
 			                y = df_total['tasa_contagio'],
-			                mode = "markers+lines",
 			                name = "Tasa de contagios"
 			                )
 
@@ -140,6 +139,8 @@ def espana_layout():
 		    ],
 		    lg=12,
 		),
+	
+
 	])
 
 	return espana
@@ -160,6 +161,10 @@ def comunidades_layout():
 	df_comunidades = pd.merge(left=df_comunidades, right=df_poblacion, left_on='Comunidad', right_on='Comunidad')
 	df_comunidades['porcentaje_infeccion'] = (df_comunidades['Casos'] / df_comunidades['Poblacion']) * 100
 
+	df = px.data.gapminder().query("year == 2007")
+
+	scl = [ [0,"rgb(5, 10, 172)"],[0.35,"rgb(40, 60, 190)"],[0.5,"rgb(70, 100, 245)"],\
+	    [0.6,"rgb(90, 120, 245)"],[0.7,"rgb(106, 137, 247)"],[1,"rgb(220, 220, 220)"] ]
 	
 	comunidades = dbc.Row([
 		dbc.Col(
@@ -248,6 +253,51 @@ def comunidades_layout():
 			    )
 		    ],
 		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'mapa_comunidades',
+			        figure = {
+			            'data' : [
+			            	go.Scattergeo(
+			            		lon = df_comunidades['Longitud'],
+        						lat = df_comunidades['Latitud'],
+        						text = df_comunidades['Comunidad'],
+        						mode = 'markers',
+        						marker = dict(
+						            size = 15,
+						            opacity = 0.8,
+						            reversescale = True,
+						            autocolorscale = False,
+						            line = dict(
+						                width=1,
+						                color='rgba(102, 102, 102)'
+						            ),
+						            colorscale = scl,
+						            cmin = 0,
+						            color = df_comunidades['porcentaje_infeccion'],
+						            cmax = df_comunidades['porcentaje_infeccion'].max(),
+						            colorbar=dict(
+						                title="Porcentaje de infección por comunidades"
+						            )
+						        )
+			            	)
+			               
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+						    title = 'Porcentaje de infección por comunidades',
+						    geo = dict(
+						        scope = 'europe',
+						        showland = True,
+						        landcolor = "rgb(250, 250, 250)"
+						    )
+			            )
+			        }
+			    )
+		    ],
+		    lg=12,
+		),	
 		#                 dbc.Col(
 		#                     [
 		#                     	dcc.Graph(
