@@ -37,6 +37,7 @@ tabs = dbc.Container(
 		            [
 		                dbc.Tab(label="España", tab_id="espana"),
 		                dbc.Tab(label="Comunidades autónomas", tab_id="comunidades"),
+		                dbc.Tab(label="Internacional", tab_id="internacional"),
 		            ],
 		            id="tabs",
 		            active_tab="espana",
@@ -332,6 +333,80 @@ def comunidades_layout():
 
 	return comunidades
 
+def internacional_layout():
+	url = 'https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_19-covid-Confirmed.csv&filename=time_series_2019-ncov-Confirmed.csv'
+	s=requests.get(url).content
+	df_world=pd.read_csv(io.StringIO(s.decode('utf-8')))
+	columns = df_world.columns.tolist()
+
+	df_world = df_world.melt(id_vars=columns[:4], 
+	        var_name="Date", 
+	        value_name="Cases").groupby(['Date', 'Country/Region'], as_index=False).sum()
+
+	df_world['Country'] = df_world['Country/Region']
+
+	df_world['Date'] = pd.to_datetime(df_world.Date)
+	df_world['nuevos_infectados'] = df_world['Cases'].diff()
+	df_world['tasa_contagio'] = df_world['nuevos_infectados'] / (df_world['Cases'] - df_world['nuevos_infectados'])
+
+	df_world = df_world.sort_values(['Country', 'Date'])
+
+	internacional = dbc.Row([
+		dbc.Col(
+		    [
+				html.H1([dbc.Badge(str(df_world["Cases"].max()) + " Casos", className="ml-1 bg-warning")]),
+			],
+		    lg=4,
+		    className="mt-3 mt-3"
+		),
+#		dbc.Col(
+#		    [
+#				html.H1([dbc.Badge(str(df_world["Muertes"].max()) + " Muertes", className="ml-1 bg-danger")]),
+#			],
+#		    lg=4,
+#		    className="mt-3 mt-3"
+#		),		
+#		dbc.Col(
+#		    [
+#				html.H1([dbc.Badge(str(df_world["Altas"].max()) + " Altas", className="ml-1 bg-success")]),
+#		    ],
+#		    lg=4,
+#		    className="mt-3 mt-3"
+#		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'Total',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+
+			                x = df_world[df_world['Country'] == i]['Date'],
+			                y = df_world[df_world['Country'] == i]['Cases'],
+			                mode = "markers+lines",
+			                name = i
+			                )for i in df_world.Country.unique()
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Casos de coronavirus en España",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
+		),	
+
+	])
+
+	return internacional
+
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 server = app.server
 
@@ -343,6 +418,8 @@ def switch_tab(at):
         return espana_layout()
     elif at == "comunidades":
         return comunidades_layout()
+    elif at == "internacional":
+        return internacional_layout()
 
 if __name__ == '__main__':
     app.run_server()
