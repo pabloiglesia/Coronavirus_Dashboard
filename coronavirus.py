@@ -157,12 +157,10 @@ def comunidades_layout():
 	df_comunidades['Day'] = new[0]
 	df_comunidades['Hour'] = new[1]
 	df_comunidades['Comunidad2'] = df_comunidades['Comunidad']
-	df_comunidades = df_comunidades.groupby(['Day','Comunidad2']).max()
+	df_comunidades = df_comunidades.groupby(['Day','Comunidad'], as_index=False).max()
 
 	df_comunidades = pd.merge(left=df_comunidades, right=df_poblacion, left_on='Comunidad', right_on='Comunidad')
 	df_comunidades['porcentaje_infeccion'] = (df_comunidades['Casos'] / df_comunidades['Poblacion']) * 100
-
-	df = px.data.gapminder().query("year == 2007")
 
 	scl = [ [0,"rgb(5, 10, 172)"],[0.35,"rgb(40, 60, 190)"],[0.5,"rgb(70, 100, 245)"],\
 	    [0.6,"rgb(90, 120, 245)"],[0.7,"rgb(106, 137, 247)"],[1,"rgb(220, 220, 220)"] ]
