@@ -29,7 +29,7 @@ tabs = dbc.Container(
 	[
 		html.H1('Evolución Covid-19'),
 		html.Div([
-	        html.P('En este Dashboard se muestra la evolución del coronavirus en España en tiempo real. Los datos se actualizan cada media hora y la fuente oficial es Ministerio de Sanidad y consejerías autonómicas.')
+	        html.P('En este Dashboard se muestra la evolución del coronavirus en España y en el mundo en tiempo real. Los datos se actualizan cada media hora y la fuente oficial es Ministerio de Sanidad y consejerías autonómicas, para los datos de españa y ourworldindata.org para los datos del resto del mundo.')
 	    ]),
 		html.Div(
 		    [
@@ -157,7 +157,7 @@ def espana_layout():
 			            ],
 			            'layout' : go.Layout(
 			            	template = TEMPLATE,
-			                title = "Tasa de contagio en España",
+			                title = "Tasa de contagio en España (Casos nuevos/Casos ayer)",
 			                xaxis = {'title': 'Fecha'},
 			                yaxis = {'title': 'Personas'}
 
