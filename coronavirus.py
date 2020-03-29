@@ -143,6 +143,33 @@ def espana_layout():
 		dbc.Col(
 		    [
 		    	dcc.Graph(
+			        id = 'nuevos_infectados',
+			        figure = {
+			            'data' : [
+			                go.Bar(
+
+			                x = df_total['Day'],
+			                y = df_total['nuevos_infectados'],
+			                name = "Nuevos infectados"
+			                )
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Nuevos contagiados en España",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12,
+		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
 			        id = 'tasa_contagio',
 			        figure = {
 			            'data' : [
