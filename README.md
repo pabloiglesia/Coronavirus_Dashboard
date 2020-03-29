@@ -4,5 +4,5 @@ En este repositorio puedes encontrar todo lo necesario para crear un dashboard d
 
 Para ejecutarlo solo debes clonar el proyecto, instalar python y pipenv, y ejecutar los siguientes comandos
   
-         pipenv install
-         pipenv run gunicorn coronavirus:server -b :8050
+    pipenv install
+    pipenv run gunicorn coronavirus:server -b :8050
