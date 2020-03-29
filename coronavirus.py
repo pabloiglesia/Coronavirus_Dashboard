@@ -165,7 +165,7 @@ def espana_layout():
 			        }
 			    )
 		    ],
-		    lg=12,
+		    lg=6,
 		),
 		dbc.Col(
 		    [
@@ -192,7 +192,7 @@ def espana_layout():
 			        }
 			    )
 		    ],
-		    lg=12,
+		    lg=6,
 		),
 	
 
