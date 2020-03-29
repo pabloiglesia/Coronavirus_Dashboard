@@ -62,6 +62,7 @@ def espana_layout():
 
 	df_total['nuevos_infectados'] = df_total['Casos'].diff()
 	df_total['tasa_contagio'] = df_total['nuevos_infectados'] / (df_total['Casos'] - df_total['nuevos_infectados'])
+	df_total['total_infectados'] = df_total['Casos'] - df_total['Muertes'] - df_total['Altas']
 
 	espana = dbc.Row([
 		dbc.Col(
@@ -92,7 +93,6 @@ def espana_layout():
 			        figure = {
 			            'data' : [
 			                go.Scatter(
-
 			                x = df_total['Day'],
 			                y = df_total[column],
 			                mode = "markers+lines",
@@ -113,6 +113,33 @@ def espana_layout():
 		    ],
 		    lg=12
 		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'Total Infectados',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+			                x = df_total['Day'],
+			                y = df_total[column],
+			                mode = "markers+lines",
+			                name = column
+			                )for column in ['total_infectados', 'Casos']
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Casos actuales en españa",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
+		),		
 		dbc.Col(
 		    [
 		    	dcc.Graph(
@@ -332,136 +359,177 @@ def comunidades_layout():
 	return comunidades
 
 def internacional_layout():
-	url = 'https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_19-covid-Confirmed.csv&filename=time_series_2019-ncov-Confirmed.csv'
+	url = 'https://covid.ourworldindata.org/data/ecdc/full_data.csv'
 	s=requests.get(url).content
 	df_world=pd.read_csv(io.StringIO(s.decode('utf-8')))
 	columns = df_world.columns.tolist()
-	df_world = df_world.melt(id_vars=columns[:4], 
-	        var_name="Date", 
-	        value_name="Cases").groupby(['Date', 'Country/Region'], as_index=False).sum()
 
-	df_world['Country'] = df_world['Country/Region']
-	df_world['Date'] = pd.to_datetime(df_world.Date)
-	df_world = df_world.sort_values(['Country', 'Date'])
+	df_world['date'] = pd.to_datetime(df_world.date)
+	df_world = df_world.sort_values(['location', 'date'])
 
+	df_world_total = df_world[df_world['location'] == 'World']
+	df_world = df_world[df_world['location'] != 'World']
 
+	df_world_sin_china = df_world[df_world['location'] != 'China']
+	df_world_sin_china = df_world_sin_china[df_world_sin_china['date'] > '2020-02-23']
 
-	url = 'https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_19-covid-Deaths.csv&filename=time_series_2019-ncov-Deaths.csv'
-	s=requests.get(url).content
-	df_world_deaths=pd.read_csv(io.StringIO(s.decode('utf-8')))
-	columns = df_world_deaths.columns.tolist()
-	df_world_deaths = df_world_deaths.melt(id_vars=columns[:4], 
-	        var_name="Date", 
-	        value_name="Cases").groupby(['Date', 'Country/Region'], as_index=False).sum()
-
-	df_world_deaths['Country'] = df_world_deaths['Country/Region']
-	df_world_deaths['Date'] = pd.to_datetime(df_world_deaths.Date)
-	df_world_deaths = df_world_deaths.sort_values(['Country', 'Date'])
-
-
-
-	url = 'https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_19-covid-Recovered.csv&filename=time_series_2019-ncov-Recovered.csv'
-	s=requests.get(url).content
-	df_world_recoveries=pd.read_csv(io.StringIO(s.decode('utf-8')))
-	df_world_recoveries=pd.read_csv(io.StringIO(s.decode('utf-8')))
-	columns = df_world_recoveries.columns.tolist()
-	df_world_recoveries = df_world_recoveries.melt(id_vars=columns[:4], 
-	        var_name="Date", 
-	        value_name="Cases").groupby(['Date', 'Country/Region'], as_index=False).sum()
-
-	df_world_recoveries['Country'] = df_world_recoveries['Country/Region']
-	df_world_recoveries['Date'] = pd.to_datetime(df_world_recoveries.Date)
-	df_world_recoveries = df_world_recoveries.sort_values(['Country', 'Date'])
-
-	df_world['Country'] = df_world['Country/Region']
-	df_world['Date'] = pd.to_datetime(df_world.Date)
-	df_world = df_world.sort_values(['Country', 'Date'])
-
-	df_world_sin_china = df_world[df_world['Country'] != 'China']
-	df_world_sin_china = df_world_sin_china[df_world_sin_china['Date'] > '2020-02-23']
-
-	num_contagios = df_world[df_world['Date'] == df_world['Date'].max()].sum()
-	num_muertes = df_world_deaths[df_world_deaths['Date'] == df_world_deaths['Date'].max()].sum()
-	num_recuperados = df_world_recoveries[df_world_recoveries['Date'] == df_world_recoveries['Date'].max()].sum()
+	total = df_world[df_world['date'] == df_world['date'].max()].sum()
 
 	internacional = dbc.Row([
 		dbc.Col(
 		    [
-				html.H1([dbc.Badge(str(num_contagios['Cases']) + " Casos", className="ml-1 bg-warning")]),
+				html.H1([dbc.Badge(str(total['total_cases']) + " Casos", className="ml-1 bg-warning")]),
 			],
-		    lg=4,
-		    className="mt-3 mt-3"
+		    lg=6,
+		    className="mt-3"
 		),
 		dbc.Col(
 		    [
-				html.H1([dbc.Badge(str(num_muertes['Cases']) + " Muertes", className="ml-1 bg-danger")]),
+				html.H1([dbc.Badge(str(total['total_deaths']) + " Muertes", className="ml-1 bg-danger")]),
 			],
-		    lg=4,
-		    className="mt-3 mt-3"
+		    lg=6,
+		    className="mt-3"
+		),	
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'Total',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+
+			                x = df_world_total['date'],
+			                y = df_world_total[column],
+			                mode = "markers+lines",
+			                name = column
+			                )for column in ['total_deaths', 'total_cases']
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Casos de coronavirus en el mundo",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
+		),	
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'Paises',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+
+			                x = df_world[df_world['location'] == i]['date'],
+			                y = df_world[df_world['location'] == i]['total_cases'],
+			                mode = "markers+lines",
+			                name = i
+			                )for i in df_world.location.unique()
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Casos de coronavirus distribuidos por paises",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
+		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'Paises sin china',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+
+			                x = df_world_sin_china[df_world_sin_china['location'] == i]['date'],
+			                y = df_world_sin_china[df_world_sin_china['location'] == i]['total_cases'],
+			                mode = "markers+lines",
+			                name = i
+			                )for i in df_world_sin_china.location.unique()
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Casos de coronavirus distribuidos por paises sin china",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
+		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'Nuevos casos Total',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+
+			                x = df_world_total['date'],
+			                y = df_world_total[column],
+			                mode = "markers+lines",
+			                name = column
+			                )for column in ['new_deaths', 'new_cases']
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Nuevos casos de coronavirus en el mundo",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
+		),	
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'Nuevos casos Paises',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+
+			                x = df_world[df_world['location'] == i]['date'],
+			                y = df_world[df_world['location'] == i]['new_cases'],
+			                mode = "markers+lines",
+			                name = i
+			                )for i in df_world.location.unique()
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Nuevos casos de coronavirus distribuidos por paises",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
 		),		
-		dbc.Col(
-		    [
-				html.H1([dbc.Badge(str(num_recuperados['Cases']) + " Altas", className="ml-1 bg-success")]),
-		    ],
-		    lg=4,
-		    className="mt-3 mt-3"
-		),
-		dbc.Col(
-		    [
-		    	dcc.Graph(
-			        id = 'Total',
-			        figure = {
-			            'data' : [
-			                go.Scatter(
-
-			                x = df_world[df_world['Country'] == i]['Date'],
-			                y = df_world[df_world['Country'] == i]['Cases'],
-			                mode = "markers+lines",
-			                name = i
-			                )for i in df_world.Country.unique()
-
-
-			            ],
-			            'layout' : go.Layout(
-			            	template = TEMPLATE,
-			                title = "Casos de coronavirus en España",
-			                xaxis = {'title': 'Fecha'},
-			                yaxis = {'title': 'Personas'}
-
-			            )
-			        }
-			    )
-		    ],
-		    lg=12
-		),	
-		dbc.Col(
-		    [
-		    	dcc.Graph(
-			        id = 'Total',
-			        figure = {
-			            'data' : [
-			                go.Scatter(
-
-			                x = df_world_sin_china[df_world_sin_china['Country'] == i]['Date'],
-			                y = df_world_sin_china[df_world_sin_china['Country'] == i]['Cases'],
-			                mode = "markers+lines",
-			                name = i
-			                )for i in df_world_sin_china.Country.unique()
-
-
-			            ],
-			            'layout' : go.Layout(
-			            	template = TEMPLATE,
-			                title = "Casos de coronavirus en España",
-			                xaxis = {'title': 'Fecha'},
-			                yaxis = {'title': 'Personas'}
-
-			            )
-			        }
-			    )
-		    ],
-		    lg=12
-		),	
 
 	])
 
