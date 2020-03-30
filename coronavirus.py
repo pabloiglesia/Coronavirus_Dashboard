@@ -25,6 +25,9 @@ import requests
 
 TEMPLATE = "plotly_dark"
 
+DF_COMUNIDADES = None
+DF_WORLD = None
+
 tabs = dbc.Container(
 	[
 		html.H1('Evolución Covid-19'),
@@ -61,6 +64,8 @@ def espana_layout():
 	df_total = df_total.groupby('Day', as_index=False).max()
 
 	df_total['nuevos_infectados'] = df_total['Casos'].diff()
+	df_total['nuevas_muertes'] = df_total['Muertes'].diff()
+	df_total['nuevas_altas'] = df_total['Altas'].diff()
 	df_total['tasa_contagio'] = df_total['nuevos_infectados'] / (df_total['Casos'] - df_total['nuevos_infectados'])
 	df_total['total_infectados'] = df_total['Casos'] - df_total['Muertes'] - df_total['Altas']
 
@@ -194,31 +199,75 @@ def espana_layout():
 		    ],
 		    lg=6,
 		),
-	
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'nuevas_mertes',
+			        figure = {
+			            'data' : [
+			                go.Bar(
+
+			                x = df_total['Day'],
+			                y = df_total['nuevas_muertes'],
+			                name = "Nuevas Muertes",
+			                marker = dict(
+			                	color='red'
+			                	)
+			                )
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Nuevas Muertes en España",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=6,
+		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'nuevas_altas',
+			        figure = {
+			            'data' : [
+			                go.Bar(
+
+			                x = df_total['Day'],
+			                y = df_total['nuevas_altas'],
+			                name = "Nuevas Altas",
+			                marker = dict(
+			                	color='green'
+			                	)
+			                )
+			             ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Nuevas Altas en España",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'},
+			           
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=6,
+		),
 
 	])
 
 	return espana
 
-def comunidades_layout():
-	df_poblacion = pd.read_csv('poblacion.csv')
 
-	url="https://s3-eu-west-1.amazonaws.com/images.webbuildeer.com/coronavirus.csv"
-	s=requests.get(url).content
-	df_comunidades=pd.read_csv(io.StringIO(s.decode('utf-8')))
-
-	new = df_comunidades['Date'].str.split(' ', n = 1, expand = True)
-	df_comunidades['Day'] = new[0]
-	df_comunidades['Hour'] = new[1]
-	df_comunidades['Comunidad2'] = df_comunidades['Comunidad']
-	df_comunidades = df_comunidades.groupby(['Day','Comunidad'], as_index=False).max()
-
-	df_comunidades = pd.merge(left=df_comunidades, right=df_poblacion, left_on='Comunidad', right_on='Comunidad')
-	df_comunidades['porcentaje_infeccion'] = (df_comunidades['Casos'] / df_comunidades['Poblacion']) * 100
-
+def comunidades_content(df_comunidades, values):
 	scl = [ [0,"rgb(5, 10, 172)"],[0.35,"rgb(40, 60, 190)"],[0.5,"rgb(70, 100, 245)"],\
 	    [0.6,"rgb(90, 120, 245)"],[0.7,"rgb(106, 137, 247)"],[1,"rgb(220, 220, 220)"] ]
-	
+
 	comunidades = dbc.Row([
 		dbc.Col(
 		    [
@@ -233,8 +282,7 @@ def comunidades_layout():
 			                y = df_comunidades[df_comunidades['Comunidad'] == i]['Casos'],
 			                mode = "markers+lines",
 			                name = i
-			                )for i in df_comunidades.Comunidad.unique()
-
+			                )for i in values
 
 			            ],
 			            'layout' : go.Layout(
@@ -262,7 +310,7 @@ def comunidades_layout():
 			                y = df_comunidades[df_comunidades['Comunidad'] == i]['Muertes'],
 			                mode = "markers+lines",
 			                name = i
-			                )for i in df_comunidades.Comunidad.unique()
+			                )for i in values
 
 
 			            ],
@@ -291,7 +339,7 @@ def comunidades_layout():
 			                y = df_comunidades[df_comunidades['Comunidad'] == i]['porcentaje_infeccion'],
 			                mode = "markers+lines",
 			                name = i
-			                )for i in df_comunidades.Comunidad.unique()
+			                )for i in values
 
 
 			            ],
@@ -350,55 +398,64 @@ def comunidades_layout():
 			    )
 		    ],
 		    lg=12,
-		),	
-		#                 dbc.Col(
-		#                     [
-		#                     	dcc.Graph(
-		# 
-		# 					        id = 'Casos_Internacionales',
-		# 					        figure = {
-		# 					            'data' : [
-		# 					                go.Scatter(
-		# 
-		# 					                x = df_internacional[df_internacional['Country'] == i]['Date'],
-		# 					                y = df_internacional[df_internacional['Country'] == i]['Cases'],
-		# 					                mode = "markers+lines",
-		# 					                name = i
-		# 					                )for i in df_internacional.Country.unique()
-		# 
-		# 
-		# 					            ],
-		# 					            'layout' : go.Layout(
-		# 					            	template = TEMPLATE,
-		# 					                title = "Casos de Coronavirus por Países",
-		# 					                xaxis = {'title': 'Fecha'},
-		# 					                yaxis = {'title': 'Personas'}
-		# 
-		# 					            )
-		# 					        }
-		# 					    )
-		#                     ],
-		#                     xs=12
-		#                 ),
+		),
 		            
 	])
 
 	return comunidades
 
-def internacional_layout():
-	url = 'https://covid.ourworldindata.org/data/ecdc/full_data.csv'
+
+def comunidades_layout(filter=False,values=[]):
+	print("Nueva Petición")
+	df_poblacion = pd.read_csv('poblacion.csv')
+
+	url="https://s3-eu-west-1.amazonaws.com/images.webbuildeer.com/coronavirus.csv"
 	s=requests.get(url).content
-	df_world=pd.read_csv(io.StringIO(s.decode('utf-8')))
-	columns = df_world.columns.tolist()
+	df_comunidades=pd.read_csv(io.StringIO(s.decode('utf-8')))
+
+	new = df_comunidades['Date'].str.split(' ', n = 1, expand = True)
+	df_comunidades['Day'] = new[0]
+	df_comunidades['Hour'] = new[1]
+	df_comunidades['Comunidad2'] = df_comunidades['Comunidad']
+	df_comunidades = df_comunidades.groupby(['Day','Comunidad'], as_index=False).max()
+
+	df_comunidades = pd.merge(left=df_comunidades, right=df_poblacion, left_on='Comunidad', right_on='Comunidad')
+	df_comunidades['porcentaje_infeccion'] = (df_comunidades['Casos'] / df_comunidades['Poblacion']) * 100
+
+	if not filter:
+		values = df_comunidades.Comunidad.unique()	
+
+	global DF_COMUNIDADES 
+	DF_COMUNIDADES = df_comunidades
+
+	content = comunidades_content(df_comunidades,values)
+
+	comunidades = html.Div([
+		html.Div([
+			dcc.Dropdown(
+		        id='id-dropdown',
+		        options=[{'label': i, 'value': i} for i in df_comunidades.Comunidad.unique()],
+		        value= values,
+		        multi=True,
+		    )],
+		    className="m-3"
+	    ),
+	    html.Div(
+    		[content],
+    		id="comunidades"
+		)
+    ])
+
+	return comunidades
+
+
+def internacional_content(df_world, values):
 
 	df_world['date'] = pd.to_datetime(df_world.date)
 	df_world = df_world.sort_values(['location', 'date'])
 
 	df_world_total = df_world[df_world['location'] == 'World']
 	df_world = df_world[df_world['location'] != 'World']
-
-	df_world_sin_china = df_world[df_world['location'] != 'China']
-	df_world_sin_china = df_world_sin_china[df_world_sin_china['date'] > '2020-02-23']
 
 	total = df_world[df_world['date'] == df_world['date'].max()].sum()
 
@@ -457,41 +514,13 @@ def internacional_layout():
 			                y = df_world[df_world['location'] == i]['total_cases'],
 			                mode = "markers+lines",
 			                name = i
-			                )for i in df_world.location.unique()
+			                )for i in values
 
 
 			            ],
 			            'layout' : go.Layout(
 			            	template = TEMPLATE,
 			                title = "Casos de coronavirus distribuidos por paises",
-			                xaxis = {'title': 'Fecha'},
-			                yaxis = {'title': 'Personas'}
-
-			            )
-			        }
-			    )
-		    ],
-		    lg=12
-		),
-		dbc.Col(
-		    [
-		    	dcc.Graph(
-			        id = 'Paises sin china',
-			        figure = {
-			            'data' : [
-			                go.Scatter(
-
-			                x = df_world_sin_china[df_world_sin_china['location'] == i]['date'],
-			                y = df_world_sin_china[df_world_sin_china['location'] == i]['total_cases'],
-			                mode = "markers+lines",
-			                name = i
-			                )for i in df_world_sin_china.location.unique()
-
-
-			            ],
-			            'layout' : go.Layout(
-			            	template = TEMPLATE,
-			                title = "Casos de coronavirus distribuidos por paises sin china",
 			                xaxis = {'title': 'Fecha'},
 			                yaxis = {'title': 'Personas'}
 
@@ -541,7 +570,7 @@ def internacional_layout():
 			                y = df_world[df_world['location'] == i]['new_cases'],
 			                mode = "markers+lines",
 			                name = i
-			                )for i in df_world.location.unique()
+			                )for i in values
 
 
 			            ],
@@ -562,21 +591,66 @@ def internacional_layout():
 
 	return internacional
 
+def internacional_layout():
+	url = 'https://covid.ourworldindata.org/data/ecdc/full_data.csv'
+	s=requests.get(url).content
+	df_world=pd.read_csv(io.StringIO(s.decode('utf-8')))
+	columns = df_world.columns.tolist()
+
+	global DF_WORLD
+	DF_WORLD = df_world
+
+	values = ['Spain', 'China', 'United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Iran']
+
+	content = internacional_content(df_world,values)
+
+	internacional = html.Div([
+		html.Div([
+			dcc.Dropdown(
+		        id='internacional-dropdown',
+		        options=[{'label': i, 'value': i} for i in df_world.location.unique()],
+		        value= values,
+		        multi=True,
+		    )],
+		    className="m-3"
+	    ),
+	    html.Div(
+    		[content],
+    		id="internacional"
+		)
+    ])
+
+	return internacional
+
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
 server = app.server
 
 app.layout = html.Div(tabs)
+app.config.suppress_callback_exceptions = True
 
 @app.callback(Output("content", "children"), [Input("tabs", "active_tab")])
 def switch_tab(at):
     if at == "espana":
         return espana_layout()
     elif at == "comunidades":
-        return comunidades_layout()
+    	return comunidades_layout()
     elif at == "internacional":
         return internacional_layout()
 
+@app.callback(
+dash.dependencies.Output('comunidades', 'children'),
+[dash.dependencies.Input('id-dropdown', 'value')])
+def update_graph(values):
+	return comunidades_content(DF_COMUNIDADES, values)
+
+
+@app.callback(
+dash.dependencies.Output('internacional', 'children'),
+[dash.dependencies.Input('internacional-dropdown', 'value')])
+def update_graph(values):
+	print(values)
+	return internacional_content(DF_WORLD, values)
+
 if __name__ == '__main__':
     app.run_server()
-
