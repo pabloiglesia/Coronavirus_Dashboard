@@ -16,7 +16,6 @@ import plotly.io as pio
 import io
 import requests
 
-
 # df_internacional = pd.read_csv('https://docs.google.com/spreadsheets/d/1avGWWl1J19O_Zm0NGTGy2E-fOG05i4ljRfjl87P7FiA/export?gid=0&format=csv')
 # 
 # df_internacional['Country'] = df_internacional['Country/Region']
@@ -451,7 +450,6 @@ def comunidades_layout(filter=False,values=[]):
 
 def internacional_content(df_world, values):
 
-	df_world['date'] = pd.to_datetime(df_world.date)
 	df_world = df_world.sort_values(['location', 'date'])
 
 	df_world_total = df_world[df_world['location'] == 'World']
@@ -597,10 +595,15 @@ def internacional_layout():
 	df_world=pd.read_csv(io.StringIO(s.decode('utf-8')))
 	columns = df_world.columns.tolist()
 
+	print(columns)
+	print(df_world)
+
+	df_world['date'] = pd.to_datetime(df_world.date)
+
 	global DF_WORLD
 	DF_WORLD = df_world
 
-	values = ['Spain', 'China', 'United States', 'Italy', 'France', 'Germany', 'United Kingdom', 'Iran']
+	values = df_world[df_world['date'] == df_world['date'].max()].sort_values('total_cases', ascending=False)['location'].head(11)[1:]
 
 	content = internacional_content(df_world,values)
 
