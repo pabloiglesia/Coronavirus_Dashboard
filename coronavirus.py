@@ -592,7 +592,7 @@ def internacional_content(df_world, values):
 	return internacional
 
 def internacional_layout():
-	url = 'https://covid.ourworldindata.org/data/ecdc/full_data.csv'
+	url = 'https://s3-eu-west-1.amazonaws.com/images.webbuildeer.com/coronavirus-world.csv'
 	s=requests.get(url).content
 	df_world=pd.read_csv(io.StringIO(s.decode('utf-8')))
 	columns = df_world.columns.tolist()
