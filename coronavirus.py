@@ -52,8 +52,10 @@ tabs = dbc.Container(
 )
 
 def get_comunidades():
+	url = 'https://covid19.isciii.es/resources/serie_historica_acumulados.csv'
+	# url = 'https://s3-eu-west-1.amazonaws.com/images.webbuildeer.com/coronavirus.csv'
 	df_poblacion = pd.read_csv('poblacion.csv')
-	df_comunidades = pd.read_csv('https://covid19.isciii.es/resources/serie_historica_acumulados.csv', encoding='latin1')
+	df_comunidades = pd.read_csv(url, encoding='latin1')
 	df_comunidades = df_comunidades.fillna(value=0)
 	df_comunidades = pd.merge(left=df_comunidades, right=df_poblacion, left_on='CCAA', right_on='CCAA')
 	df_comunidades['FECHA'] = pd.to_datetime(df_comunidades.FECHA, format='%d/%m/%Y')
@@ -730,7 +732,8 @@ def internacional_content(df_world, values):
 	return internacional
 
 def internacional_layout():
-	url = 'https://s3-eu-west-1.amazonaws.com/images.webbuildeer.com/coronavirus-world.csv'
+	url = 'https://covid.ourworldindata.org/data/ecdc/full_data.csv'
+	# url = 'https://s3-eu-west-1.amazonaws.com/images.webbuildeer.com/coronavirus-world.csv'
 	s=requests.get(url).content
 	df_world=pd.read_csv(io.StringIO(s.decode('utf-8')))
 	columns = df_world.columns.tolist()
