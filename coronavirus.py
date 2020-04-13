@@ -69,6 +69,7 @@ def get_comunidades():
 	df_comunidades['porcentaje_infeccion'] = (df_comunidades['CASOS'] / df_comunidades['Poblacion']) * 100
 	df_comunidades['tasa_contagio'] = df_comunidades['nuevos_infectados'] / (df_comunidades['CASOS'] - df_comunidades['nuevos_infectados'])
 	df_comunidades['total_infectados'] = df_comunidades['CASOS'] - df_comunidades['Fallecidos'] - df_comunidades['Recuperados']
+	df_comunidades['infectados_dia'] = df_comunidades['nuevos_infectados'] - df_comunidades['nuevas_muertes'] - df_comunidades['nuevas_altas']
 
 	return df_comunidades
 
@@ -235,13 +236,13 @@ def kpis(df, filter="No filtrar"):
 		dbc.Col(
 		    [
 		    	dcc.Graph(
-			        id = 'total_infectados',
+			        id = 'infectados_dia',
 			        figure = {
 			            'data' : [
 			                go.Bar(
 
 			                x = df['FECHA'],
-			                y = df['total_infectados'],
+			                y = df['infectados_dia'],
 			                name = "Portadores activos por día"
 			                )
 
