@@ -235,21 +235,21 @@ def kpis(df, filter="No filtrar"):
 		dbc.Col(
 		    [
 		    	dcc.Graph(
-			        id = 'nuevos_infectados',
+			        id = 'total_infectados',
 			        figure = {
 			            'data' : [
 			                go.Bar(
 
 			                x = df['FECHA'],
-			                y = df['nuevos_infectados'],
-			                name = "Infectados por día"
+			                y = df['total_infectados'],
+			                name = "Portadores activos por día"
 			                )
 
 
 			            ],
 			            'layout' : go.Layout(
 			            	template = TEMPLATE,
-			                title = "Infectados por día",
+			                title = "Portadores activos por día",
 			                xaxis = {'title': 'Fecha'},
 			                yaxis = {'title': 'Personas'}
 
