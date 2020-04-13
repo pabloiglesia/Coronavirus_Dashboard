@@ -235,21 +235,21 @@ def kpis(df, filter="No filtrar"):
 		dbc.Col(
 		    [
 		    	dcc.Graph(
-			        id = 'tasa_contagio',
+			        id = 'nuevos_infectados',
 			        figure = {
 			            'data' : [
 			                go.Bar(
 
 			                x = df['FECHA'],
-			                y = df['tasa_contagio'],
-			                name = "Tasa de contagios"
+			                y = df['nuevos_infectados'],
+			                name = "Infectados por día"
 			                )
 
 
 			            ],
 			            'layout' : go.Layout(
 			            	template = TEMPLATE,
-			                title = "Tasa de contagio por día (Casos nuevos/Casos ayer)",
+			                title = "Infectados por día",
 			                xaxis = {'title': 'Fecha'},
 			                yaxis = {'title': 'Personas'}
 
