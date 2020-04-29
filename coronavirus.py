@@ -59,12 +59,12 @@ def get_comunidades():
 	df_comunidades = df_comunidades.fillna(value=0)
 	df_comunidades = pd.merge(left=df_comunidades, right=df_poblacion, left_on='CCAA', right_on='CCAA')
 	df_comunidades['FECHA'] = pd.to_datetime(df_comunidades.FECHA, format='%d/%m/%Y')
-	df_comunidades['Casos acummulados (PCR)'] = df_comunidades['PCR+']
+	df_comunidades['Casos acumulados (PCR)'] = df_comunidades['PCR+']
 	df_comunidades['Test Rápdos'] = df_comunidades['TestAc+']
 	df_comunidades = df_comunidades.sort_values(by=['Comunidad', 'FECHA'], ascending=True)
 
 
-	df_comunidades['nuevos_infectados'] = df_comunidades['Total Casos (PCR)'].diff()
+	df_comunidades['nuevos_infectados'] = df_comunidades['Casos acumulados (PCR)'].diff()
 	df_comunidades['nuevas_muertes'] = df_comunidades['Fallecidos'].diff()
 	df_comunidades['nuevas_altas'] = df_comunidades['Recuperados'].diff()
 	df_comunidades['nuevas_hospitalizados'] = df_comunidades['Hospitalizados'].diff()
@@ -73,9 +73,9 @@ def get_comunidades():
 	df_comunidades['nuevas_TestAc'] = df_comunidades['Test Rápdos'].diff()
 	df_comunidades = df_comunidades[df_comunidades['FECHA'] != df_comunidades['FECHA'].min()]
 
-	df_comunidades['porcentaje_infeccion'] = (df_comunidades['Total Casos (PCR)'] / df_comunidades['Poblacion']) * 100
-	df_comunidades['tasa_contagio'] = df_comunidades['nuevos_infectados'] / (df_comunidades['Total Casos (PCR)'] - df_comunidades['nuevos_infectados'])
-	df_comunidades['Casos activos'] = df_comunidades['Total Casos (PCR)'] - df_comunidades['Fallecidos'] - df_comunidades['Recuperados']
+	df_comunidades['porcentaje_infeccion'] = (df_comunidades['Casos acumulados (PCR)'] / df_comunidades['Poblacion']) * 100
+	df_comunidades['tasa_contagio'] = df_comunidades['nuevos_infectados'] / (df_comunidades['Casos acumulados (PCR)'] - df_comunidades['nuevos_infectados'])
+	df_comunidades['Casos activos'] = df_comunidades['Casos acumulados (PCR)'] - df_comunidades['Fallecidos'] - df_comunidades['Recuperados']
 	df_comunidades['infectados_dia'] = df_comunidades['nuevos_infectados'] - df_comunidades['nuevas_muertes'] - df_comunidades['nuevas_altas']
 
 	return df_comunidades
@@ -93,7 +93,7 @@ def kpis(df, filter="No filtrar"):
 	kpis = dbc.Row([
 		dbc.Col(
 		    [
-				html.H1([dbc.Badge(str(int(df['Total Casos (PCR)'].max())) + " Casos", className="ml-1 bg-warning")]),
+				html.H1([dbc.Badge(str(int(df['Casos acumulados (PCR)'].max())) + " Casos", className="ml-1 bg-warning")]),
 			],
 		    lg=4,
 		    className="mt-3 mt-3"
@@ -128,7 +128,7 @@ def kpis(df, filter="No filtrar"):
 		),		
 		dbc.Col(
 		    [
-				html.H1([dbc.Badge(str(round((int(df['Total Casos (PCR)'].max())/poblacion)*100, 2)) + "% Población", className="ml-1 bg-info")]),
+				html.H1([dbc.Badge(str(round((int(df['Casos acumulados (PCR)'].max())/poblacion)*100, 2)) + "% Población", className="ml-1 bg-info")]),
 		    ],
 		    lg=4,
 		    className="mt-3 mt-3"
@@ -144,7 +144,7 @@ def kpis(df, filter="No filtrar"):
 			                y = df[column],
 			                mode = "markers+lines",
 			                name = column
-			                )for column in ['Total Casos (PCR)', 'Fallecidos', 'Recuperados']
+			                )for column in ['Casos acumulados (PCR)', 'Fallecidos', 'Recuperados']
 
 
 			            ],
@@ -171,7 +171,7 @@ def kpis(df, filter="No filtrar"):
 			                y = df[column],
 			                mode = "markers+lines",
 			                name = column
-			                )for column in ['Casos activos', 'Total Casos (PCR)', 'Hospitalizados', 'Test Rápdos']
+			                )for column in ['Casos activos', 'Casos acumulados (PCR)', 'Hospitalizados', 'Test Rápdos']
 
 
 			            ],
@@ -439,7 +439,7 @@ def comunidades_content(df_comunidades, values):
 			                go.Scatter(
 
 			                x = df_comunidades[df_comunidades['Comunidad'] == i]['FECHA'],
-			                y = df_comunidades[df_comunidades['Comunidad'] == i]['Total Casos (PCR)'],
+			                y = df_comunidades[df_comunidades['Comunidad'] == i]['Casos acumulados (PCR)'],
 			                mode = "markers+lines",
 			                name = i
 			                )for i in values
