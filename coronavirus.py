@@ -59,7 +59,7 @@ def get_comunidades():
 	df_comunidades = df_comunidades.fillna(value=0)
 	df_comunidades = pd.merge(left=df_comunidades, right=df_poblacion, left_on='CCAA', right_on='CCAA')
 	df_comunidades['FECHA'] = pd.to_datetime(df_comunidades.FECHA, format='%d/%m/%Y')
-	df_comunidades['Casos acumulados (PCR)'] = df_comunidades['PCR+']
+	df_comunidades['Casos acumulados (PCR)'] = max(df_comunidades['Casos'], df_comunidades['PCR+'])
 	df_comunidades['Test Rápdos'] = df_comunidades['TestAc+']
 	df_comunidades = df_comunidades.sort_values(by=['Comunidad', 'FECHA'], ascending=True)
 
