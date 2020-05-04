@@ -595,6 +595,7 @@ def comunidades_layout(filter=False,values=[]):
 	return comunidades
 
 
+
 def internacional_content(df_world, values):
 
 	df_world = df_world.sort_values(['location', 'date'])
@@ -603,6 +604,12 @@ def internacional_content(df_world, values):
 	df_world = df_world[df_world['location'] != 'World']
 
 	total = df_world[df_world['date'] == df_world['date'].max()].sum()
+
+	df_world = df_world[df_world.location.isin(values)]
+	total_values = df_world[df_world['date'] == df_world['date'].max()].sum()['total_cases']
+	df_world_sum = df_world.groupby(['date'], as_index=False).sum()
+	min_date = df_world_sum[df_world_sum['total_cases'] > int(total_values*0.01)]['date'].min()
+	df_world = df_world[df_world['date'] > min_date]
 
 	internacional = dbc.Row([
 		dbc.Col(
@@ -678,6 +685,34 @@ def internacional_content(df_world, values):
 		dbc.Col(
 		    [
 		    	dcc.Graph(
+			        id = 'Paises_muertes',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+
+			                x = df_world[df_world['location'] == i]['date'],
+			                y = df_world[df_world['location'] == i]['total_deaths'],
+			                mode = "markers+lines",
+			                name = i
+			                )for i in values
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Muertes por coronavirus distribuidos por paises",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
+		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
 			        id = 'Nuevos casos Total',
 			        figure = {
 			            'data' : [
@@ -730,11 +765,41 @@ def internacional_content(df_world, values):
 			    )
 		    ],
 		    lg=12
+		),
+		dbc.Col(
+		    [
+		    	dcc.Graph(
+			        id = 'Nuevas muertes Paises',
+			        figure = {
+			            'data' : [
+			                go.Scatter(
+
+			                x = df_world[df_world['location'] == i]['date'],
+			                y = df_world[df_world['location'] == i]['new_deaths'],
+			                mode = "markers+lines",
+			                name = i
+			                )for i in values
+
+
+			            ],
+			            'layout' : go.Layout(
+			            	template = TEMPLATE,
+			                title = "Nuevas muertes de coronavirus distribuidos por paises",
+			                xaxis = {'title': 'Fecha'},
+			                yaxis = {'title': 'Personas'}
+
+			            )
+			        }
+			    )
+		    ],
+		    lg=12
 		),		
 
 	])
 
 	return internacional
+
+
 
 def internacional_layout():
 	url = 'https://covid.ourworldindata.org/data/ecdc/full_data.csv'
